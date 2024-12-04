@@ -1,0 +1,19 @@
+{
+  "name": "be-project",
+  "version": "1.0.0",
+  "description": "Backend Project for Bandage",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhruv-203/Bandage-BE.git"
+  },
+  "author": "Dhruv-203",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dhruv-203/Bandage-BE/issues"
+  },
+  "homepage": "https://github.com/dhruv-203/Bandage-BE#readme"
+}
