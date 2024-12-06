@@ -1,18 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES2020", // The target JavaScript version
-    "module": "commonjs", // The module system
+    "target": "ES6", // The target JavaScript version
+    "module": "CommonJS", // The module system
     "lib": [
-      "ES2020"
+      "dom",
+      "es6",
+      "es2017",
+      "esnext.asynciterable"
     ], // Library definitions
     "allowJs": true, // Allows JavaScript files to be compiled
-    "strict": true, // Enable all strict type-checking options
+    "strict": false, // Enable all strict type-checking options
     "esModuleInterop": true, // Enables compatibility for importing CommonJS modules
     "skipLibCheck": true, // Skips type checking of all declaration files
     "forceConsistentCasingInFileNames": true, // Ensures consistent casing in file names
     "moduleResolution": "node", // Module resolution strategy
     "outDir": "./dist", // Output directory for compiled files
-    "rootDir": "./src", // Root directory of the source files
+    "baseUrl": "src/", // Root directory of the source files
     "sourceMap": true, // Generates corresponding .map files
     "resolveJsonModule": true, // Allows import of .json files
     "emitDecoratorMetadata": true, // Enables emitting decorator metadata (required for TypeORM)
@@ -21,7 +24,8 @@
       "./node_modules/@types"
     ], // Specifies the type definition files to include
     "types": [
-      "node"
+      "node",
+      // "express"
     ] // Includes type definitions for Node.js
   },
   "exclude": [

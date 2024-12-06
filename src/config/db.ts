@@ -1,17 +1,17 @@
-import { configDotenv } from "dotenv";
-import path from "path";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-configDotenv({
-  path: path.resolve(__dirname, "../../.env"),
-});
+import { Cart } from "../app/entities/Cart";
+import { User } from "../app/entities/User";
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: "postgres",
   url: process.env.DATABASE_URL,
   synchronize: true, // only in developement
   logging: ["query", "migration", "schema", "error"],
   migrations: [],
   subscribers: [],
-  entities: [__dirname + "/entities/*.ts"],
+  // entities: ["../app/entities/*.ts"],
+  entities: [User, Cart],
 });
+
+export { AppDataSource };
