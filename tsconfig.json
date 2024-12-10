@@ -33,6 +33,7 @@
     "dist"
   ], // Excludes the node_modules and dist folders
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "types.d.ts"
   ] // Includes all TypeScript files in the src directory
 }

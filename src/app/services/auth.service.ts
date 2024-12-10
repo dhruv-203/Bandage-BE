@@ -12,11 +12,30 @@ export async function isUniqueUser(email: string) {
       email: email,
     });
     if (user) {
-      return false;
+      return false; // that user is not unique as it already exists
     }
     return true;
   } catch (error) {
     return new ApiError(500, "Unexpected Error Occured", [error]);
+  }
+}
+
+export async function resetRefreshToken(email: string) {
+  try {
+    const user = await AppDataSource.getRepository(User).findOneBy({ email });
+    if (user) {
+      user.refreshToken = null;
+      user.save();
+      return true;
+    } else {
+      return new ApiError(401, "User with this email doesn't exists", []);
+    }
+  } catch (error) {
+    return new ApiError(
+      500,
+      "Internal server error: error while reseting refresh token",
+      [error]
+    );
   }
 }
 
@@ -27,7 +46,7 @@ export async function userExistsAndPassMatch(email: string, password: string) {
   }
   const check = await user.checkPassword(password);
   if (!check) {
-    return new ApiError(401, "Invalid Credentials", []);
+    return new ApiError(401, "Invalid Credentials: Password Wrong", []);
   }
   return check;
 }
@@ -98,15 +117,49 @@ export async function createNewUser(
   }
 
   // generating refresh token
-  const accessToken = await newUser.generateAccessToken();
-  const refreshToken = await newUser.generateRefreshToken();
-  newUser.refreshToken = refreshToken;
   try {
-    const { password, refreshToken, ...registeredUser } =
-      await AppDataSource.getRepository(User).save(newUser);
-    return { user: registeredUser, accessToken, refreshToken };
+    const accessToken = await newUser.generateAccessToken();
+    const refreshToken = await newUser.generateRefreshToken();
+    newUser.refreshToken = refreshToken;
+    try {
+      const { password, refreshToken, ...registeredUser } =
+        await AppDataSource.getRepository(User).save(newUser);
+      return { user: registeredUser, accessToken, refreshToken };
+    } catch (err) {
+      return new ApiError(500, "Internal server error, unable to create user", [
+        err,
+      ]);
+    }
   } catch (err) {
-    return new ApiError(500, "Internal server error, unable to create user", [
+    return new ApiError(
+      500,
+      "Internal server occured: Access Token or Refresh Token can't be generated",
+      [err]
+    );
+  }
+}
+
+// check refreshToken of the user is valid or not
+export async function authenticateRefreshToken(
+  id: string,
+  refreshToken: string
+) {
+  try {
+    const user = await AppDataSource.getRepository(User).findOneBy({ id });
+    if (!user) {
+      return new ApiError(401, "Invalid Refresh Token", []);
+    }
+    if (user.refreshToken !== refreshToken) {
+      return new ApiError(401, "Refresh Token expired", []);
+    }
+    // generating new refresh token
+    const response = await generateAccessAndRefreshToken(user.email);
+    if (response instanceof ApiError) {
+      return response;
+    }
+    return { AT: response.AT, RT: response.RT };
+  } catch (err) {
+    return new ApiError(500, "Internal server error, while accessing user", [
       err,
     ]);
   }

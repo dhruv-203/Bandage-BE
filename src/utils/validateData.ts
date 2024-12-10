@@ -5,7 +5,7 @@ export async function validateData(obj: any) {
   if (error.length > 0) {
     let errorStatement = "Validation error occured at: ";
     for (let x of error) {
-      errorStatement.concat(`${x.property}, `);
+      errorStatement = errorStatement.concat(`${x.property}, `);
     }
     return new ApiError(403, errorStatement, [...error]);
   } else {

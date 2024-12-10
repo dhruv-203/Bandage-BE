@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import {
   BaseEntity,
   Column,
@@ -37,7 +37,7 @@ export class User extends BaseEntity {
   @Column({ name: "profilePhoto" })
   profilePhoto: string; // from the frontend
 
-  @Column({ name: "refreshToken" })
+  @Column({ name: "refreshToken", nullable: true })
   refreshToken: string | null;
 
   async checkPassword(password: string) {
@@ -48,7 +48,7 @@ export class User extends BaseEntity {
     return jwt.sign(
       {
         id: this.id,
-      },
+      } as JwtPayload,
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
@@ -60,7 +60,7 @@ export class User extends BaseEntity {
     return jwt.sign(
       {
         id: this.id,
-      },
+      } as JwtPayload,
       process.env.REFRESH_TOKEN_SECRET,
       {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRY,

@@ -6,7 +6,7 @@ import { authRouter } from "./app/routes/auth.routes";
 const app = express();
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );

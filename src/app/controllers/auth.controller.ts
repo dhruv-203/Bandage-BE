@@ -1,24 +1,26 @@
 import { isEmail } from "class-validator";
 import { NextFunction, Request, response, Response } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { ApiError } from "../../utils/ApiError";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { cookieOptions } from "../../utils/cookieOptions";
 import { validateData } from "../../utils/validateData";
-import { Cart } from "../entities/Cart";
 import { User } from "../entities/User";
 import {
+  authenticateRefreshToken,
   createNewUser,
   generateAccessAndRefreshToken,
   isUniqueUser,
+  resetRefreshToken,
   userExistsAndPassMatch,
 } from "../services/auth.service";
 export class AuthController {
   // destructure this options to add the expiry of the cookie as this a basic reusable template
 
   static async registerUser(req: Request, res: Response, next: NextFunction) {
+    console.log(req.body);
     const { Name, Email, Password } = req.body;
     const newUser = new User();
-    const newCart = new Cart();
     newUser.name = Name;
     newUser.email = Email;
     newUser.password = Password;
@@ -51,7 +53,9 @@ export class AuthController {
             ...cookieOptions,
             maxAge: 30 * 24 * (60 * 60) * 1000, // 30 days
           })
-          .json(new ApiResponse(200, response, "Successfully Registered"));
+          .json(
+            new ApiResponse(200, { ...response }, "Successfully Registered")
+          );
       } else {
         return next(
           new ApiError(404, "Profile Photo has not been uploaded", [])
@@ -67,7 +71,6 @@ export class AuthController {
   static async loginUser(req: Request, res: Response, next: NextFunction) {
     // user data obtain
     const { Email, Password } = req.body;
-    console.log(req.body);
     // validate for being non-empty and email verification
     if (!Email || !Password || Email === "" || Password === "") {
       return next(
@@ -82,7 +85,7 @@ export class AuthController {
     // check if user exists or not and check password matching
     const check = await userExistsAndPassMatch(Email, Password);
     if (check instanceof ApiError) {
-      return next(new ApiError(401, "Invalid Credentials", []));
+      return next(check);
     } else {
       // access token and refresh token generate and assign new refreshtoken to the user table
       const respon = await generateAccessAndRefreshToken(Email);
@@ -108,11 +111,101 @@ export class AuthController {
             {
               user,
               accessToken: AT,
-              responseToken: RT,
+              refreshToken: RT,
             },
             "Login Successful"
           )
         );
+    }
+  }
+
+  // logout controller remains the jwt verify middleware is setup
+  static async logoutUser(req: Request, res: Response, next: NextFunction) {
+    // verify its an authorised user
+    // obtain the user from the req object
+    // and reset the refresh token by setting it null
+    // make the access token in the cookies null
+    // return the response success
+    if (req.user) {
+      const response = await resetRefreshToken(req.user.email);
+      if (response instanceof ApiError) {
+        return next(res);
+      }
+      res
+        .status(200)
+        .clearCookie("AccessToken", {
+          ...cookieOptions,
+        })
+        .clearCookie("RefreshToken", {
+          ...cookieOptions,
+        })
+        .json(new ApiResponse(200, {}, "Logout Successful"));
+    } else {
+      return next(
+        new ApiError(
+          401,
+          "Unauthorised request: You are not an authorised user to perform this access",
+          []
+        )
+      );
+    }
+  }
+
+  static async regenerateRefreshToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const refreshToken = req.cookies?.RefreshToken;
+    if (!refreshToken) {
+      return next(
+        new ApiError(401, "Unauthorised Access, missing refresh token", [])
+      );
+    }
+    try {
+      const { id } = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      ) as JwtPayload;
+      const response = await authenticateRefreshToken(id, refreshToken);
+      if (response instanceof ApiError) {
+        return next(response);
+      }
+      res
+        .status(200)
+        .cookie("AccessToken", response.AT, {
+          ...cookieOptions,
+          maxAge: 24 * 60 * 60 * 1000, //24 hrs
+        })
+        .cookie("RefreshToken", response.RT, {
+          ...cookieOptions,
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30d
+        })
+        .json({
+          accessToken: response.AT,
+          refreshToken: response.RT,
+        });
+    } catch (error) {
+      return next(
+        new ApiError(401, "Refresh Token verification failed", [error])
+      );
+    }
+  }
+
+  static async checkUser(req: Request, res: Response, next: NextFunction) {
+    if (req.user) {
+      const { password, refreshToken, ...user } = req.user;
+      res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            user: user,
+            accessToken: req.cookies.AccessToken,
+            responseToken: req.cookies.responseToken,
+          },
+          "User Exists"
+        )
+      );
     }
   }
 }
