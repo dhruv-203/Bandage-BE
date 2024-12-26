@@ -18,13 +18,12 @@ export class AuthController {
   // destructure this options to add the expiry of the cookie as this a basic reusable template
 
   static async registerUser(req: Request, res: Response, next: NextFunction) {
-    console.log(req.body);
     const { Name, Email, Password } = req.body;
     const newUser = new User();
     newUser.name = Name;
     newUser.email = Email;
     newUser.password = Password;
-
+    newUser.addresses = [];
     //validate user
     const isError = await validateData(newUser);
     if (isError !== null) {
@@ -42,7 +41,6 @@ export class AuthController {
         if (response instanceof ApiError) {
           return next(response);
         }
-
         return res
           .status(200)
           .cookie("AccessToken", response.accessToken, {

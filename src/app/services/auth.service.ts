@@ -11,6 +11,7 @@ export async function isUniqueUser(email: string) {
     const user = await AppDataSource.getRepository(User).findOneBy({
       email: email,
     });
+    console.log(user);
     if (user) {
       return false; // that user is not unique as it already exists
     }
@@ -54,8 +55,15 @@ export async function userExistsAndPassMatch(email: string, password: string) {
 //use this for login functionality
 export async function generateAccessAndRefreshToken(email: string) {
   try {
-    const user = await AppDataSource.getRepository(User).findOneBy({
-      email,
+    const user = await AppDataSource.getRepository(User).findOne({
+      where: {
+        email,
+      },
+      relations: {
+        cart: true,
+        addresses: true,
+        orders: true,
+      },
     });
     if (!user) {
       return new ApiError(
@@ -100,6 +108,8 @@ export async function createNewUser(
   newUser.email = Email;
   newUser.password = await bcrypt.hash(Password, 10);
   newUser.cart = newCart;
+  newUser.addresses = [];
+  newUser.orders = [];
   // uploading user uploaded file on cloudinary
   if (profilePhoto) {
     const response = await uploadOnCloudinary(profilePhoto.path);

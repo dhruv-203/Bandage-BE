@@ -1,8 +1,12 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import { ErrorHandler } from "./app/middlewares/errorHandler.middleware";
 import { authRouter } from "./app/routes/auth.routes";
+import { cartRouter } from "./app/routes/cart.routes";
+import { orderRouter } from "./app/routes/orders.routes";
+import { productsRouter } from "./app/routes/products.routes";
+import { userRouter } from "./app/routes/user.routes";
 const app = express();
 app.use(
   cors({
@@ -15,13 +19,11 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-const handler = (req: Request, res: Response, next: NextFunction) => {
-  console.log("Visited:", req.path);
-  return res.status(200).json("Okay");
-};
-
-app.get("/", handler);
 app.use("/auth", authRouter);
+app.use("/user", userRouter);
+app.use("/products", productsRouter);
+app.use("/cart", cartRouter);
+app.use("/orders", orderRouter);
 
 app.use(
   ErrorHandler as (

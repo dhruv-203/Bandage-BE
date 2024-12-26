@@ -6,10 +6,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from "typeorm";
+import { Address } from "./Address";
 import { Cart } from "./Cart";
+import { Orders } from "./Orders";
 
 @Entity()
 export class User extends BaseEntity {
@@ -39,6 +42,15 @@ export class User extends BaseEntity {
 
   @Column({ name: "refreshToken", nullable: true })
   refreshToken: string | null;
+
+  @Column({ name: "wishlist", type: "simple-array", default: [] })
+  wishlist: string[];
+
+  @OneToMany(() => Orders, (order) => order.user, { cascade: true })
+  orders: Orders[];
+
+  @OneToMany(() => Address, (address) => address.user, { cascade: true })
+  addresses: Address[];
 
   async checkPassword(password: string) {
     return await bcrypt.compare(password, this.password);

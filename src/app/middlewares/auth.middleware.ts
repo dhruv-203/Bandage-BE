@@ -20,7 +20,15 @@ export async function verifyUser(
       process.env.ACCESS_TOKEN_SECRET
     ) as JwtPayload;
     if (id) {
-      const user = await AppDataSource.getRepository(User).findOneBy({ id });
+      const user = await AppDataSource.getRepository(User).findOne({
+        where: { id },
+        relations: {
+          cart: true,
+          addresses: true,
+          orders: true,
+        },
+      });
+
       if (!user) {
         return next(new ApiError(404, "User not found on this access key", []));
       }
@@ -29,6 +37,7 @@ export async function verifyUser(
       return next(new ApiError(500, "Unable to decode access token", []));
     }
   } catch (error) {
+    console.log("Error in verifyUser middleware: ", error);
     return next(
       new ApiError(401, "Unauthorised access: invalid access token", [error])
     );
