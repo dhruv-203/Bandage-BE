@@ -6,6 +6,7 @@
 //shippingAddress
 //userid manyOne
 
+import { CartItem } from "app/types/entityTypes";
 import {
   BaseEntity,
   Column,
@@ -16,7 +17,6 @@ import {
   PrimaryColumn,
 } from "typeorm";
 import { User } from "./User";
-import { CartItem } from "app/types/entityTypes";
 
 @Entity()
 export class Orders extends BaseEntity {

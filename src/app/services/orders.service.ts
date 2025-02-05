@@ -16,6 +16,11 @@ export async function placeOrder(userId: string, shippingAddress: string) {
         cart: true,
         orders: true,
       },
+      order: {
+        orders: {
+          orderDate: "DESC",
+        },
+      },
     });
     // check user object is not empty
     if (!user) {
@@ -42,6 +47,7 @@ export async function placeOrder(userId: string, shippingAddress: string) {
     //save the user object and return it
     user.cart.cartItems = [];
     await user.save();
+
     return user;
   } catch (error) {
     return new ApiError(500, "Error Occurred while placing order", [error]);

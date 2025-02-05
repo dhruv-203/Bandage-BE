@@ -36,6 +36,11 @@ export async function updateUserProfile(
         addresses: true,
         orders: true,
       },
+      order: {
+        orders: {
+          orderDate: "DESC",
+        },
+      },
     });
 
     // uploading user uploaded file on cloudinary
@@ -123,6 +128,11 @@ export async function addToWishlist(
         addresses: true,
         cart: true,
         orders: true,
+      },
+      order: {
+        orders: {
+          orderDate: "DESC",
+        },
       },
     });
     if (!user) {

@@ -27,6 +27,11 @@ export async function verifyUser(
           addresses: true,
           orders: true,
         },
+        order: {
+          orders: {
+            orderDate: "DESC",
+          },
+        },
       });
 
       if (!user) {

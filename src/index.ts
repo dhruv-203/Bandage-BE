@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { app } from "./app";
 import { AppDataSource } from "./config/db";
-import path = require("path");
+// import path = require("path");
 
 AppDataSource.initialize()
   .then(() => {

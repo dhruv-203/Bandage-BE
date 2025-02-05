@@ -64,6 +64,11 @@ export async function generateAccessAndRefreshToken(email: string) {
         addresses: true,
         orders: true,
       },
+      order: {
+        orders: {
+          orderDate: "DESC",
+        },
+      },
     });
     if (!user) {
       return new ApiError(
