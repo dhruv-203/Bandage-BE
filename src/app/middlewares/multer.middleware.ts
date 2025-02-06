@@ -15,6 +15,7 @@ const storage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (err: Error | null, filename: string) => void
   ) {
+    console.log(file);
     cb(null, file.originalname);
   },
 });
