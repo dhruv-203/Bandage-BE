@@ -44,6 +44,7 @@ export const uploader =
             )
           );
         } else if (err) {
+          console.log(err);
           reject(new ApiError(500, "Internal Server Error", [err]));
         }
         resolve();
