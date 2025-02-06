@@ -24,6 +24,7 @@ export class AuthController {
     newUser.email = Email;
     newUser.password = Password;
     newUser.addresses = [];
+    console.log("Hellow in registerUser: ", JSON.stringify(newUser));
     //validate user
     const isError = await validateData(newUser);
     if (isError !== null) {
