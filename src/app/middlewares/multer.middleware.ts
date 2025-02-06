@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express";
+import fs from "fs";
 import multer, { MulterError } from "multer";
+import path from "path";
 import { ApiError } from "../../utils/ApiError";
 const storage = multer.diskStorage({
   destination: function (
@@ -7,16 +9,14 @@ const storage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) {
-    cb(null, "./public/users");
+    const destPath = path.join(process.cwd(), "public", "users");
+    fs.mkdirSync(destPath, { recursive: true }); // Create directory if missing
+    cb(null, destPath);
   },
 
-  filename: function (
-    req: Request,
-    file: Express.Multer.File,
-    cb: (err: Error | null, filename: string) => void
-  ) {
-    console.log(file);
-    cb(null, file.originalname);
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
   },
 });
 
